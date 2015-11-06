@@ -1,7 +1,4 @@
-# comments
-# http://www.telegraph.co.uk/culture/film/11225801/Jim-Carreys-best-lines.html
-# http://m.imdb.com/name/nm0000120/quotes
-# http://thefw.com/jim-carrey-gifs/
+# Team Cupcake - Brad McManus, Chad Hilke, and Ryan Barby
 
 import tweepy, time, sys
 from TwitterBotKeys import keys
@@ -43,6 +40,13 @@ class Twitbot:
 		if int((size/1000)) > 3072:
 			statusGIF = r"C:\\Users\chilke\Documents\Git\Jimcarreybot\gifs\Ace2.gif"
 		self.api.update_with_media(filename=statusGIF, status=quote)
+
+	def retweet(self):
+		JCBot = Twitbot(keys)		
+		for tweet in JCBot.api.search(q="prize retweet", count=1):
+			self.api.retweet(id=(tweet.id))
+			id = str(tweet.id)
+			print(id)
 			
 	def trollUser(self, query, replyText):
 		for tweet in self.api.search(q=query, count=1):
@@ -65,10 +69,13 @@ def getLines(filename):
 	return f
 			
 def main():
-	#while True:
+	while True:
 		JCBot = Twitbot(keys)
-		quotes = getLines("liners.txt")
+		quotes = getLines("liners.txt")		
 		JCBot.updateStatusGIF(quotes) #update our status
+		TimeToSleep = randint(120,360) 
+		time.sleep(TimeToSleep) #wait 2-4 minutes to troll first user
+		JCBot.retweet()
 		TimeToSleep = randint(120,360) 
 		time.sleep(TimeToSleep) #wait 2-4 minutes to troll first user
 		replyText = "Ace is on the case!"
