@@ -1,7 +1,12 @@
 # comments
+# http://www.telegraph.co.uk/culture/film/11225801/Jim-Carreys-best-lines.html
+# http://m.imdb.com/name/nm0000120/quotes
+# http://thefw.com/jim-carrey-gifs/
+
 import tweepy, time, sys
 from TwitterBotKeys import keys
 from datetime import datetime, timedelta
+import random
 from random import randint
 from os import listdir
 from os.path import isfile, join
@@ -14,27 +19,40 @@ class Twitbot:
 		ACCESS_TOKEN = keys['access_token']
 		ACCESS_TOKEN_SECRET = keys['access_token_secret']
 		auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-		#auth.secure = True
+		auth.secure = True
 		auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 		self.api = tweepy.API(auth)
 		user = self.api.me()
-		print('Name: ' + user.name)
-		print('Location: ' + user.location)
-		print('Friends: ' + str(user.friends_count))
-	
-	def tweet(self, f):       
-		for s in f:
-			self.api.update_status(status = s)
-			print(s)
+		print("Name: " + user.name)
+		print("Location: " + user.location)
+		print("Friends: " + str(user.friends_count))
+		print("-----------------------------------")
 			
-	def updateStatusGIF(self):
+	def updateStatusGIF(self, quotes):
+		quote = random.choice(quotes)
+		if len(quote) > 140:
+			quote = "Alrighty then!"
+		print(quote)
 		mypath = ".\gifs"
 		onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
-		for file in onlyfiles:
-			relpath = mypath + "\\" + file
-			statusGIF = os.path.abspath(relpath)
-			print(statusGIF)
-			self.api.update_with_media(filename=statusGIF, status="Smokin'!")
+		pick = random.choice(onlyfiles)
+		print(pick)
+		relpath = mypath + "\\" + pick
+		statusGIF = os.path.abspath(relpath)
+		size = os.path.getsize(statusGIF)
+		if int((size/1000)) > 3072:
+			statusGIF = r"C:\\Users\chilke\Documents\Git\Jimcarreybot\gifs\Ace2.gif"
+		self.api.update_with_media(filename=statusGIF, status=quote)
+			
+	def trollUser(self, query, replyText):
+		for tweet in self.api.search(q=query, count=1):
+			sn = tweet.user.screen_name
+			m = "@{0}, {1}".format(sn, replyText) 
+			id = str(tweet.id)
+			print(replyText)
+			print(tweet.user.screen_name)
+			print(id)
+			troll = self.api.update_status(status=m, in_reply_to_status_id=id)
 
 def getLines(filename):			
 	argfile = str(filename)
@@ -47,33 +65,26 @@ def getLines(filename):
 	return f
 			
 def main():
-	JCBot = Twitbot(keys)
-	f = getLines("liners.txt")
-	#twitter.tweet(f)
-	JCBot.updateStatusGIF()
-	replyText = "Ace is on the case!"
-	for tweet in JCBot.api.search(q="lost pet", count=1):
-		sn = tweet.user.screen_name
-		m = "@{0}, {1}".format(sn, replyText) 
-		id = str(tweet.id)
-		print(replyText)
-		print(tweet.user.screen_name)
-		print(id)
-		x = JCBot.api.update_status(status=m, in_reply_to_status_id=id) 
-
-#	replyText = "Laces out Dan!"
-#	for tweet in api.search(q="Dolphin", count=1):
-#		sn = tweet.user.screen_name
-#		m = "@{0}, {1}".format(sn, replyText) 
-#		print(replyText)
-#		print(tweet.user.screen_name)
-#		s = api.update_status(status=m, in_reply_to_status_id = tweet.id)
-#	replyText = "I'm in psychoville, and Finkle's the mayor!"
-#	for tweet in api.search(q="crazy", count=1):
-#		sn = tweet.user.screen_name
-#		m = "@{0}, {1}".format(sn, replyText) 
-#		print(replyText)
-#		print(tweet.user.screen_name)
-#		s = api.update_status(status=m, in_reply_to_status_id = tweet.id)
+	#while True:
+		JCBot = Twitbot(keys)
+		quotes = getLines("liners.txt")
+		JCBot.updateStatusGIF(quotes) #update our status
+		TimeToSleep = randint(120,360) 
+		time.sleep(TimeToSleep) #wait 2-4 minutes to troll first user
+		replyText = "Ace is on the case!"
+		query = "lost pet"
+		JCBot.trollUser(query, replyText)
+		TimeToSleep = randint(120,360)
+		time.sleep(TimeToSleep) #wait 2-4 minutes to troll next user
+		replyText = "Laces out Dan!"
+		query = "Dolphin"
+		JCBot.trollUser(query, replyText)
+		TimeToSleep = randint(120,360)
+		time.sleep(TimeToSleep) #wait 2-4 minutes to troll next user
+		replyText = "I'm in psychoville, and Finkle's the mayor!"
+		query = "crazy"
+		JCBot.trollUser(query, replyText)
+		TimeToSleep = randint(900,1200) 
+		time.sleep(TimeToSleep) #wait 10-20 minutes, then update status again
 	
 if __name__ == "__main__": main() 
