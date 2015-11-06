@@ -57,7 +57,18 @@ class Twitbot:
 			print(tweet.user.screen_name)
 			print(id)
 			troll = self.api.update_status(status=m, in_reply_to_status_id=id)
-
+			
+	def favorites(self):
+		for tweet in self.api.search(q = "Jim Carrey", count=5, lang = "en"):
+			try:
+				self.api.create_favorite(id=(tweet.id))
+				TimeToSleep = randint(15,30)
+				time.sleep(TimeToSleep)
+				id = str(tweet.id)
+				print(id)
+			except:
+				pass
+				
 def getLines(filename):			
 	argfile = str(filename)
 	try:
@@ -73,6 +84,7 @@ def main():
 		JCBot = Twitbot(keys)
 		quotes = getLines("liners.txt")		
 		JCBot.updateStatusGIF(quotes) #update our status
+		JCBot.favorites()
 		TimeToSleep = randint(120,360) 
 		time.sleep(TimeToSleep) #wait 2-4 minutes to troll first user
 		JCBot.retweet()
